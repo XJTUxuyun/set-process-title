@@ -1,37 +1,8 @@
-/* ==========================================================================
- * setproctitle.c - Linux/Darwin setproctitle.
- * --------------------------------------------------------------------------
- * Copyright (C) 2010  William Ahern
- * Copyright (C) 2013  Salvatore Sanfilippo
- * Copyright (C) 2013  Stam He
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to permit
- * persons to whom the Software is furnished to do so, subject to the
- * following conditions:
- *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
- * NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
- * ==========================================================================
- */
-
 #include "setproctitle.h"
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-
 
 #include <stddef.h>	/* NULL size_t */
 #include <stdarg.h>	/* va_list va_start va_end */
@@ -80,7 +51,8 @@ static inline size_t spt_min(size_t a, size_t b) {
  * For discussion on the portability of the various methods, see
  * http://lists.freebsd.org/pipermail/freebsd-stable/2008-June/043136.html
  */
-static int spt_clearenv(void) {
+static int spt_clearenv(void) 
+{
 #if __GLIBC__
 	clearenv();
 
@@ -100,7 +72,8 @@ static int spt_clearenv(void) {
 } /* spt_clearenv() */
 
 
-static int spt_copyenv(char *oldenv[]) {
+static int spt_copyenv(char *oldenv[]) 
+{
 	extern char **environ;
 	char *eq;
 	int i, error;
@@ -111,7 +84,8 @@ static int spt_copyenv(char *oldenv[]) {
 	if ((error = spt_clearenv()))
 		goto error;
 
-	for (i = 0; oldenv[i]; i++) {
+	for (i = 0; oldenv[i]; i++) 
+	{
 		if (!(eq = strchr(oldenv[i], '=')))
 			continue;
 
@@ -131,11 +105,13 @@ error:
 } /* spt_copyenv() */
 
 
-static int spt_copyargs(int argc, char *argv[]) {
+static int spt_copyargs(int argc, char *argv[]) 
+{
 	char *tmp;
 	int i;
 
-	for (i = 1; i < argc || (i >= argc && argv[i]); i++) {
+	for (i = 1; i < argc || (i >= argc && argv[i]); i++) 
+	{
 		if (!argv[i])
 			continue;
 
@@ -149,7 +125,8 @@ static int spt_copyargs(int argc, char *argv[]) {
 } /* spt_copyargs() */
 
 
-void spt_init(int argc, char *argv[]) {
+void spt_init(int argc, char *argv[]) 
+{
         char **envp = environ;
 	char *base, *end, *nul, *tmp;
 	int i, error;
@@ -160,14 +137,16 @@ void spt_init(int argc, char *argv[]) {
 	nul = &base[strlen(base)];
 	end = nul + 1;
 
-	for (i = 0; i < argc || (i >= argc && argv[i]); i++) {
+	for (i = 0; i < argc || (i >= argc && argv[i]); i++) 
+	{
 		if (!argv[i] || argv[i] < end)
 			continue;
 
 		end = argv[i] + strlen(argv[i]) + 1;
 	}
 
-	for (i = 0; envp[i]; i++) {
+	for (i = 0; envp[i]; i++) 
+	{
 		if (envp[i] < end)
 			continue;
 
@@ -217,7 +196,8 @@ error:
 #define SPT_MAXTITLE 255
 #endif
 
-void setproctitle(const char *fmt, ...) {
+void setproctitle(const char *fmt, ...) 
+{
 	char buf[SPT_MAXTITLE + 1]; /* use buffer in case argv[0] is passed */
 	va_list ap;
 	char *nul;
@@ -226,21 +206,27 @@ void setproctitle(const char *fmt, ...) {
 	if (!SPT.base)
 		return;
 
-	if (fmt) {
+	if (fmt) 
+	{
 		va_start(ap, fmt);
 		len = vsnprintf(buf, sizeof buf, fmt, ap);
 		va_end(ap);
-	} else {
+	} 
+	else 
+	{
 		len = snprintf(buf, sizeof buf, "%s", SPT.arg0);
 	}
 
 	if (len <= 0)
 		{ error = errno; goto error; }
 
-	if (!SPT.reset) {
+	if (!SPT.reset) 
+	{
 		memset(SPT.base, 0, SPT.end - SPT.base);
 		SPT.reset = 1;
-	} else {
+	} 
+	else 
+	{
 		memset(SPT.base, 0, spt_min(sizeof buf, SPT.end - SPT.base));
 	}
 
@@ -248,9 +234,12 @@ void setproctitle(const char *fmt, ...) {
 	memcpy(SPT.base, buf, len);
 	nul = &SPT.base[len];
 
-	if (nul < SPT.nul) {
+	if (nul < SPT.nul) 
+	{
 		*SPT.nul = '.';
-	} else if (nul == SPT.nul && &nul[1] < SPT.end) {
+	} 
+	else if (nul == SPT.nul && &nul[1] < SPT.end) 
+	{
 		*SPT.nul = ' ';
 		*++nul = '\0';
 	}
